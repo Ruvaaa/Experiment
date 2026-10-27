@@ -9,6 +9,7 @@ interface AuthContextValue {
   profile: Profile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
+  signInWithGitHub: () => Promise<void>
   signUp: (email: string, password: string, fullName: string) => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
@@ -50,9 +51,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
+  async function signInWithGitHub() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo: `${window.location.origin}/dashboard`, scopes: 'read:user user:email' },
+    })
+    if (error) throw error
+  }
+
   async function signUp(email: string, password: string, fullName: string) {
+    const normalizedEmail = email.trim().toLowerCase()
     const { error } = await supabase.auth.signUp({
-      email,
+      email: normalizedEmail,
       password,
       options: { data: { full_name: fullName } },
     })
@@ -77,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{user, session, profile, loading, signIn, signUp, signOut, resetPassword, updateProfile}}>
+    <AuthContext.Provider value={{user, session, profile, loading, signIn, signInWithGitHub, signUp, signOut, resetPassword, updateProfile}}>
       {children}
     </AuthContext.Provider>
   )

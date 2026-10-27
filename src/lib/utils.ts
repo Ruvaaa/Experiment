@@ -16,6 +16,13 @@ export function isThisWeekDate(date: string): boolean {
   return isThisWeek(new Date(date))
 }
 
+export function normalizeAccuracy(value: number | string): number | null {
+  if (value === '' || value === null || value === undefined) return null
+  const numeric = typeof value === 'number' ? value : Number(value.trim())
+  if (!Number.isFinite(numeric) || numeric < 0 || numeric > 100) return null
+  return numeric > 1 ? numeric / 100 : numeric
+}
+
 export function formatAccuracy(value: number | null): string {
   if (value === null) return '—'
   return `${(value * 100).toFixed(2)}%`

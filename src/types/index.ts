@@ -7,6 +7,15 @@ export interface Profile {
   updated_at: string
 }
 
+export interface Project {
+  id: string
+  user_id: string
+  name: string
+  description: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Dataset {
   id: string
   user_id: string
@@ -51,6 +60,16 @@ export interface Experiment {
   model?: Model
   dataset?: Dataset
   runs?: ExperimentRun[]
+  project_id?: string | null
+  project?: Project
+  task_type?: string | null
+  git_repository?: string | null
+  git_commit?: string | null
+  random_seed?: number | null
+  framework?: string | null
+  hyperparameters?: Record<string, unknown>
+  custom_metrics?: Record<string, unknown>
+  source?: 'manual' | 'sdk'
 }
 
 export interface ExperimentRun {
@@ -69,6 +88,18 @@ export interface ExperimentRun {
   training_time_seconds: number | null
   notes: string | null
   created_at: string
+  status?: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled'
+  started_at?: string | null
+  completed_at?: string | null
+  hyperparameters?: Record<string, unknown>
+  custom_metrics?: Record<string, unknown>
+  model_config?: Record<string, unknown>
+  environment?: Record<string, unknown>
+  random_seed?: number | null
+  error_message?: string | null
+  source?: 'manual' | 'sdk'
+  client_event_id?: string | null
+  updated_at?: string
 }
 
 export interface Note {

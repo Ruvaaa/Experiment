@@ -22,7 +22,9 @@ export function useCreateRun() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: Omit<ExperimentRun, 'id' | 'created_at'>) => {
-      const { data: result, error } = await supabase.from('experiment_runs').insert(data).select().single()
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      if (authError || !authData.user) throw authError ?? new Error('You must be signed in to create a run')
+      const { data: result, error } = await supabase.from('experiment_runs').insert({ ...data, user_id: authData.user.id }).select().single()
       if (error) throw error
       return result as ExperimentRun
     },
@@ -31,6 +33,24 @@ export function useCreateRun() {
       qc.invalidateQueries({ queryKey: ['experiment', vars.experiment_id] })
       qc.invalidateQueries({ queryKey: ['experiments'] })
     },
+  })
+}
+
+export function useRunMetrics(runId: string) {
+  return useQuery({
+    queryKey: ['run-metrics', runId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('run_metric_history')
+        .select('id,step,epoch,metrics,client_event_id,event_timestamp,recorded_at')
+        .eq('run_id', runId)
+        .order('event_timestamp', { ascending: true, nullsFirst: false })
+        .order('step', { ascending: true })
+        .order('recorded_at', { ascending: true })
+      if (error) throw error
+      return data ?? []
+    },
+    enabled: !!runId,
   })
 }
 

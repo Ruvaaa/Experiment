@@ -201,7 +201,7 @@ function NoteCard({ note, onView, onDelete }: NoteCardProps) {
     return (
       <Card className="flex flex-col gap-3">
         <input
-          className="w-full text-sm font-semibold text-neutral-900 border-b border-neutral-200 bg-transparent pb-1 focus:outline-none focus:border-pink"
+          className="w-full text-sm font-semibold text-neutral-900 border-b border-neutral-200 bg-transparent pb-1 focus:outline-none focus:border-neutral-950"
           value={inline.title}
           onChange={e => setInline(s => ({ ...s, title: e.target.value }))}
           placeholder="Title"

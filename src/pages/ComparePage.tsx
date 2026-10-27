@@ -112,12 +112,12 @@ function ExperimentSelector({ experiments, selected, onChange }: ExperimentSelec
           {selectedExps.map(exp => (
             <span
               key={exp.id}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-pink-muted text-pink border border-pink/20"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-neutral-200 text-neutral-950 border border-neutral-950/20"
             >
               {exp.name}
               <button
                 onClick={() => remove(exp.id)}
-                className="hover:text-pink-hover transition-colors"
+                className="hover:text-neutral-700 transition-colors"
                 aria-label={`Remove ${exp.name}`}
               >
                 <X size={12} />
@@ -165,12 +165,12 @@ function ExperimentSelector({ experiments, selected, onChange }: ExperimentSelec
                       className={cn(
                         'w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-colors',
                         isDisabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-neutral-50',
-                        isSelected && 'bg-pink-light',
+                        isSelected && 'bg-neutral-100',
                       )}
                     >
                       <span className={cn(
                         'w-4 h-4 flex-shrink-0 rounded border-2 flex items-center justify-center transition-colors',
-                        isSelected ? 'bg-pink border-pink text-white' : 'border-neutral-300',
+                        isSelected ? 'bg-neutral-950 border-neutral-950 text-white' : 'border-neutral-300',
                       )}>
                         {isSelected && <svg viewBox="0 0 12 12" fill="currentColor" className="w-2.5 h-2.5"><path d="M10 3L5 8.5 2 5.5" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                       </span>
@@ -262,7 +262,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   return (
     <div className="bg-white border border-neutral-100 rounded-lg shadow-lg px-3 py-2 text-xs">
       <p className="font-medium text-neutral-700 mb-1 max-w-32 truncate">{label}</p>
-      <p className="text-pink font-semibold">{payload[0].value.toFixed(2)}%</p>
+      <p className="text-neutral-950 font-semibold">{payload[0].value.toFixed(2)}%</p>
     </div>
   )
 }
@@ -315,7 +315,7 @@ function AccuracyChart({ selected, bestRuns }: AccuracyChartProps) {
             domain={[0, 100]}
           />
           <Tooltip content={<ChartTooltip />} />
-          <Bar dataKey="accuracy" fill="#E879A0" radius={[4, 4, 0, 0]} maxBarSize={60} />
+          <Bar dataKey="accuracy" fill="#0A0A0A" radius={[4, 4, 0, 0]} maxBarSize={60} />
         </BarChart>
       </ResponsiveContainer>
     </Card>
@@ -364,7 +364,7 @@ export default function ComparePage() {
           {/* ── Empty state ── */}
           {selectedIds.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-14 h-14 rounded-full bg-pink-light flex items-center justify-center text-pink mb-4">
+              <div className="w-14 h-14 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-950 mb-4">
                 <BarChart2 size={24} />
               </div>
               <h3 className="text-base font-semibold text-neutral-900 mb-2">No experiments selected</h3>

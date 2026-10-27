@@ -46,7 +46,9 @@ export function useCreateExperiment() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: Omit<Experiment, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'model' | 'dataset' | 'runs'>) => {
-      const { data: result, error } = await supabase.from('experiments').insert(data).select().single()
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      if (authError || !authData.user) throw authError ?? new Error('You must be signed in to create an experiment')
+      const { data: result, error } = await supabase.from('experiments').insert({ ...data, user_id: authData.user.id }).select().single()
       if (error) throw error
       return result
     },

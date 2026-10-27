@@ -24,7 +24,7 @@ import { Input, Textarea } from '../components/ui/Input'
 import { PageSpinner } from '../components/ui/Spinner'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useToast } from '../contexts/ToastContext'
-import { getGreeting, formatAccuracy, formatDate } from '../lib/utils'
+import { getGreeting, formatAccuracy, formatDate, normalizeAccuracy } from '../lib/utils'
 import type { Experiment } from '../types'
 import { useNavigate } from 'react-router-dom'
 
@@ -137,7 +137,7 @@ function QuickAddModal({ open, onClose }: { open: boolean; onClose: () => void }
     if (!values.name.trim()) errs.name = 'Name is required'
     if (values.model === '__new__' && !values.newModelName.trim()) errs.newModelName = 'Model name required'
     if (values.dataset === '__new__' && !values.newDatasetName.trim()) errs.newDatasetName = 'Dataset name required'
-    if (values.accuracy && isNaN(parseFloat(values.accuracy))) errs.accuracy = 'Must be a number'
+    if (values.accuracy && normalizeAccuracy(values.accuracy) === null) errs.accuracy = 'Must be 0–100 or 0–1'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -169,13 +169,13 @@ function QuickAddModal({ open, onClose }: { open: boolean; onClose: () => void }
         notes: values.notes.trim() || null,
       })
 
-      const acc = values.accuracy.trim() ? parseFloat(values.accuracy) : null
+      const acc = normalizeAccuracy(values.accuracy)
       if (acc !== null) {
         await createRun.mutateAsync({
           experiment_id: exp.id,
           user_id: exp.user_id,
           run_number: 1,
-          accuracy: acc > 1 ? acc / 100 : acc,
+          accuracy: acc,
           precision_score: null,
           recall: null,
           f1_score: null,
@@ -262,7 +262,7 @@ function StatCard({ title, value, icon, sub }: StatCardProps) {
     <Card className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-neutral-500">{title}</span>
-        <div className="w-9 h-9 rounded-lg bg-pink-light flex items-center justify-center text-pink">
+        <div className="w-9 h-9 rounded-lg bg-neutral-100 flex items-center justify-center text-neutral-950">
           {icon}
         </div>
       </div>
@@ -281,7 +281,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
   return (
     <div className="bg-white border border-neutral-100 rounded-lg shadow-lg px-3 py-2 text-xs">
       <p className="font-medium text-neutral-700">{label}</p>
-      <p className="text-pink font-semibold">{payload[0].value.toFixed(2)}%</p>
+      <p className="text-neutral-950 font-semibold">{payload[0].value.toFixed(2)}%</p>
     </div>
   )
 }
@@ -408,7 +408,7 @@ export default function DashboardPage() {
                     <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} unit="%" domain={[0, 100]} />
                     <Tooltip content={<ChartTooltip />} />
-                    <Line type="monotone" dataKey="accuracy" stroke="#E879A0" strokeWidth={2} dot={{ r: 3, fill: '#E879A0', strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="accuracy" stroke="#0A0A0A" strokeWidth={2} dot={{ r: 3, fill: '#0A0A0A', strokeWidth: 0 }} activeDot={{ r: 5 }} />
                   </LineChart>
                 </ResponsiveContainer>
               )}
@@ -431,7 +431,7 @@ export default function DashboardPage() {
                     <XAxis dataKey="model" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} unit="%" domain={[0, 100]} />
                     <Tooltip content={<ChartTooltip />} />
-                    <Bar dataKey="accuracy" fill="#E879A0" radius={[4, 4, 0, 0]} maxBarSize={48} />
+                    <Bar dataKey="accuracy" fill="#0A0A0A" radius={[4, 4, 0, 0]} maxBarSize={48} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -446,7 +446,7 @@ export default function DashboardPage() {
                 <CardTitle>Recent Experiments</CardTitle>
                 <button
                   onClick={() => navigate('/experiments')}
-                  className="text-xs text-pink font-medium hover:underline flex items-center gap-0.5"
+                  className="text-xs text-neutral-950 font-medium hover:underline flex items-center gap-0.5"
                 >
                   View all <ChevronRight size={12} />
                 </button>
@@ -475,7 +475,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex flex-col items-end gap-1 flex-shrink-0">
                           <Badge variant={statusVariant(exp.status as Experiment['status'])}>{exp.status}</Badge>
-                          {best !== null && <span className="text-xs font-semibold text-pink">{pct(best)}</span>}
+                          {best !== null && <span className="text-xs font-semibold text-neutral-950">{pct(best)}</span>}
                         </div>
                       </li>
                     )
@@ -505,12 +505,12 @@ export default function DashboardPage() {
                         <p className="text-sm font-medium text-neutral-900 truncate">{m.name}</p>
                         <div className="mt-1 h-1.5 rounded-full bg-neutral-100 overflow-hidden">
                           <div
-                            className="h-full rounded-full bg-pink"
+                            className="h-full rounded-full bg-neutral-950"
                             style={{ width: `${m.acc * 100}%` }}
                           />
                         </div>
                       </div>
-                      <span className="text-xs font-semibold text-pink flex-shrink-0">{pct(m.acc)}</span>
+                      <span className="text-xs font-semibold text-neutral-950 flex-shrink-0">{pct(m.acc)}</span>
                     </li>
                   ))}
                 </ol>
@@ -535,8 +535,8 @@ export default function DashboardPage() {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-pink-light flex items-center justify-center">
-                        <Trophy size={16} className="text-pink" />
+                      <div className="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center">
+                        <Trophy size={16} className="text-neutral-950" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-neutral-900 leading-tight">
@@ -551,7 +551,7 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="bg-gradient-to-br from-pink-light to-white rounded-xl p-4 text-center mt-4">
-                    <p className="text-3xl font-bold text-pink">{pct(bestExperiment.acc)}</p>
+                    <p className="text-3xl font-bold text-neutral-950">{pct(bestExperiment.acc)}</p>
                     <p className="text-xs text-neutral-400 mt-1">best accuracy</p>
                   </div>
 

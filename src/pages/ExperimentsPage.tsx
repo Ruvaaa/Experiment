@@ -189,8 +189,9 @@ function ExperimentFormModal({ open, onClose, experiment }: ExperimentFormModalP
         addToast('Experiment created', 'success')
       }
       onClose()
-    } catch {
-      addToast('Something went wrong', 'error')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Something went wrong'
+      addToast(message, 'error')
     } finally {
       setLoading(false)
     }
@@ -390,7 +391,7 @@ function ExperimentCard({ experiment, onEdit, onDelete, onDuplicate, onArchive }
       </div>
 
       {bestAcc !== null ? (
-        <p className="text-2xl font-bold text-pink">{formatAccuracy(bestAcc)}</p>
+        <p className="text-2xl font-bold text-neutral-950">{formatAccuracy(bestAcc)}</p>
       ) : (
         <p className="text-sm text-neutral-300 italic">No accuracy yet</p>
       )}
@@ -456,7 +457,7 @@ function ExperimentRow({ experiment, onEdit, onDelete, onDuplicate, onArchive }:
 
       <Badge variant={statusVariant(experiment.status)} className="flex-shrink-0">{experiment.status}</Badge>
 
-      <span className="w-20 text-sm font-semibold text-pink flex-shrink-0 text-right">
+      <span className="w-20 text-sm font-semibold text-neutral-950 flex-shrink-0 text-right">
         {bestAcc !== null ? formatAccuracy(bestAcc) : '—'}
       </span>
 
@@ -572,7 +573,7 @@ export default function ExperimentsPage() {
   return (
     <PageLayout title="Experiments" description="Manage and track your ML experiments." actions={headerActions}>
       {/* ── Filter bar ── */}
-      <div className="flex flex-wrap gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3 mb-6 shadow-sm">
         {/* Search */}
         <div className="relative flex-1 min-w-[180px]">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
@@ -645,14 +646,14 @@ export default function ExperimentsPage() {
         <div className="flex items-center rounded-lg border border-neutral-200 overflow-hidden bg-white ml-auto">
           <button
             onClick={() => setView('grid')}
-            className={cn('p-2 transition-colors', view === 'grid' ? 'bg-pink-light text-pink' : 'text-neutral-400 hover:text-neutral-700')}
+            className={cn('p-2 transition-colors', view === 'grid' ? 'bg-neutral-100 text-neutral-950' : 'text-neutral-400 hover:text-neutral-700')}
             aria-label="Grid view"
           >
             <LayoutGrid size={15} />
           </button>
           <button
             onClick={() => setView('list')}
-            className={cn('p-2 transition-colors', view === 'list' ? 'bg-pink-light text-pink' : 'text-neutral-400 hover:text-neutral-700')}
+            className={cn('p-2 transition-colors', view === 'list' ? 'bg-neutral-100 text-neutral-950' : 'text-neutral-400 hover:text-neutral-700')}
             aria-label="List view"
           >
             <List size={15} />

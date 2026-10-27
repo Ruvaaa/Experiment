@@ -14,7 +14,7 @@ export function Select({ label, error, options, placeholder, className, id, ...p
       {label && <label htmlFor={inputId} className="text-sm font-medium text-neutral-700">{label}</label>}
       <select
         id={inputId}
-        className={cn('w-full px-3 py-2 text-sm rounded-lg border border-neutral-200 bg-white text-neutral-950 focus:outline-none focus:ring-2 focus:ring-pink focus:border-transparent', error && 'border-red-400', className)}
+        className={cn('w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent', error && 'border-red-400', className)}
         {...props}
       >
         {placeholder && <option value="">{placeholder}</option>}

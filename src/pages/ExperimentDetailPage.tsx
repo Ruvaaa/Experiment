@@ -19,16 +19,16 @@ import { Input, Textarea } from '../components/ui/Input'
 import { Modal } from '../components/ui/Modal'
 import { ConfirmDialog } from '../components/ui/ConfirmDialog'
 import { PageSpinner } from '../components/ui/Spinner'
-import { cn, formatAccuracy, formatDate } from '../lib/utils'
+import { cn, formatAccuracy, formatDate, normalizeAccuracy } from '../lib/utils'
 import type { Experiment, ExperimentRun } from '../types'
 
 // ── Zod schema for Add Run form ───────────────────────────────────────────────
 
 const runSchema = z.object({
-  accuracy: z.union([z.literal(''), z.string().refine(v => !isNaN(parseFloat(v)) && parseFloat(v) >= 0 && parseFloat(v) <= 1, 'Must be 0–1')]),
-  precision_score: z.union([z.literal(''), z.string().refine(v => !isNaN(parseFloat(v)) && parseFloat(v) >= 0 && parseFloat(v) <= 1, 'Must be 0–1')]),
-  recall: z.union([z.literal(''), z.string().refine(v => !isNaN(parseFloat(v)) && parseFloat(v) >= 0 && parseFloat(v) <= 1, 'Must be 0–1')]),
-  f1_score: z.union([z.literal(''), z.string().refine(v => !isNaN(parseFloat(v)) && parseFloat(v) >= 0 && parseFloat(v) <= 1, 'Must be 0–1')]),
+  accuracy: z.union([z.literal(''), z.string().refine(v => normalizeAccuracy(v) !== null, 'Must be 0–100 or 0–1')]),
+  precision_score: z.union([z.literal(''), z.string().refine(v => normalizeAccuracy(v) !== null, 'Must be 0–100 or 0–1')]),
+  recall: z.union([z.literal(''), z.string().refine(v => normalizeAccuracy(v) !== null, 'Must be 0–100 or 0–1')]),
+  f1_score: z.union([z.literal(''), z.string().refine(v => normalizeAccuracy(v) !== null, 'Must be 0–100 or 0–1')]),
   loss: z.union([z.literal(''), z.string().refine(v => !isNaN(parseFloat(v)) && parseFloat(v) >= 0, 'Must be ≥ 0')]),
   epochs: z.union([z.literal(''), z.string().refine(v => !isNaN(parseInt(v)) && parseInt(v) > 0, 'Must be a positive integer')]),
   learning_rate: z.union([z.literal(''), z.string().refine(v => !isNaN(parseFloat(v)) && parseFloat(v) > 0, 'Must be > 0')]),
@@ -101,16 +101,16 @@ function AddRunModal({ open, onClose, experimentId, userId, nextRunNumber, curre
   }
 
   async function onSubmit(values: RunFormValues) {
-    const newAcc = parseOptionalFloat(values.accuracy as string)
+    const newAcc = normalizeAccuracy(values.accuracy as string)
     try {
       await createRun.mutateAsync({
         experiment_id: experimentId,
         user_id: userId,
         run_number: nextRunNumber,
         accuracy: newAcc,
-        precision_score: parseOptionalFloat(values.precision_score as string),
-        recall: parseOptionalFloat(values.recall as string),
-        f1_score: parseOptionalFloat(values.f1_score as string),
+        precision_score: normalizeAccuracy(values.precision_score as string),
+        recall: normalizeAccuracy(values.recall as string),
+        f1_score: normalizeAccuracy(values.f1_score as string),
         loss: parseOptionalFloat(values.loss as string),
         epochs: parseOptionalInt(values.epochs as string),
         learning_rate: parseOptionalFloat(values.learning_rate as string),
@@ -321,7 +321,7 @@ function RunsTable({ runs, onDelete, onAddRun }: RunsTableProps) {
 
       {runs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center px-4">
-          <div className="w-10 h-10 rounded-full bg-pink-light flex items-center justify-center text-pink mb-3">
+          <div className="w-10 h-10 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-950 mb-3">
             <FlaskConical size={18} />
           </div>
           <p className="text-sm font-medium text-neutral-700 mb-1">No runs yet</p>
@@ -356,13 +356,13 @@ function RunsTable({ runs, onDelete, onAddRun }: RunsTableProps) {
                     key={run.id}
                     className={cn(
                       'border-b border-neutral-50 hover:bg-neutral-50 transition-colors',
-                      isBest && 'bg-pink-light/30',
+                      isBest && 'bg-neutral-100/30',
                     )}
                   >
                     <td className="px-4 py-3 text-neutral-500 font-mono text-xs">{run.run_number}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2 flex-nowrap">
-                        <span className={cn('font-semibold', isBest ? 'text-pink' : 'text-neutral-900')}>
+                        <span className={cn('font-semibold', isBest ? 'text-neutral-950' : 'text-neutral-900')}>
                           {formatAccuracy(run.accuracy)}
                         </span>
                         {isBest && (
@@ -484,7 +484,7 @@ export default function ExperimentDetailPage() {
     return (
       <PageLayout>
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <div className="w-16 h-16 rounded-full bg-pink-light flex items-center justify-center text-pink mb-4">
+          <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-950 mb-4">
             <FlaskConical size={28} />
           </div>
           <h2 className="text-xl font-semibold text-neutral-900 mb-2">Experiment not found</h2>
@@ -573,7 +573,7 @@ export default function ExperimentDetailPage() {
                 {exp.model ? (
                   <Link
                     to="/models"
-                    className="text-pink hover:underline font-medium"
+                    className="text-neutral-950 hover:underline font-medium"
                   >
                     {exp.model.name}
                   </Link>
@@ -586,7 +586,7 @@ export default function ExperimentDetailPage() {
                 {exp.dataset ? (
                   <Link
                     to="/datasets"
-                    className="text-pink hover:underline font-medium"
+                    className="text-neutral-950 hover:underline font-medium"
                   >
                     {exp.dataset.name}
                   </Link>
@@ -618,7 +618,7 @@ export default function ExperimentDetailPage() {
             <p className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">Best Run</p>
             {effectiveBest !== null ? (
               <div className="space-y-3">
-                <p className="text-3xl font-bold text-pink">{formatAccuracy(effectiveBest)}</p>
+                <p className="text-3xl font-bold text-neutral-950">{formatAccuracy(effectiveBest)}</p>
                 <p className="text-xs text-neutral-400">
                   {runs.length} run{runs.length !== 1 ? 's' : ''} total
                 </p>

@@ -5,7 +5,7 @@ interface BadgeProps { children: React.ReactNode; variant?: 'default' | 'pink' |
 export function Badge({ children, variant = 'default', className }: BadgeProps) {
   const variants = {
     default: 'bg-neutral-100 text-neutral-600',
-    pink: 'bg-pink-muted text-pink',
+    pink: 'bg-neutral-200 text-neutral-950',
     green: 'bg-green-50 text-green-700',
     yellow: 'bg-yellow-50 text-yellow-700',
     red: 'bg-red-50 text-red-700',

@@ -8,10 +8,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function Button({ variant = 'primary', size = 'md', loading, className, disabled, children, ...props }: ButtonProps) {
-  const base = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+  const base = 'inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--page-bg)] disabled:opacity-50 disabled:cursor-not-allowed'
   const variants = {
-    primary: 'bg-pink text-white hover:bg-pink-hover',
-    secondary: 'bg-white text-neutral-700 border border-neutral-200 hover:bg-neutral-50',
+    primary: 'bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[var(--accent-hover)] active:brightness-90',
+    secondary: 'bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] hover:bg-[var(--surface-elevated)]',
     ghost: 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-950',
     danger: 'bg-red-600 text-white hover:bg-red-700',
   }

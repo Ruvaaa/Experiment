@@ -14,14 +14,14 @@ import type { ExperimentRun } from '../types'
 // ── color palette ─────────────────────────────────────────────────────────────
 
 const COLORS = [
-  '#E879A0', // pink
-  '#7C3AED', // violet
-  '#2563EB', // blue
-  '#059669', // emerald
-  '#D97706', // amber
-  '#DC2626', // red
-  '#0891B2', // cyan
-  '#9333EA', // purple
+  '#0A0A0A', // pink
+  '#0A0A0A', // violet
+  '#0A0A0A', // blue
+  '#0A0A0A', // emerald
+  '#0A0A0A', // amber
+  '#0A0A0A', // red
+  '#0A0A0A', // cyan
+  '#0A0A0A', // purple
 ]
 
 // ── Custom tooltip ────────────────────────────────────────────────────────────
@@ -54,7 +54,7 @@ function PercentTooltip({ active, payload, label }: { active?: boolean; payload?
   return (
     <div className="bg-white border border-neutral-100 rounded-lg shadow-lg px-3 py-2 text-xs">
       <p className="font-medium text-neutral-700 mb-0.5">{label}</p>
-      <p className="text-pink font-semibold">{payload[0].value.toFixed(2)}%</p>
+      <p className="text-neutral-950 font-semibold">{payload[0].value.toFixed(2)}%</p>
     </div>
   )
 }
@@ -64,7 +64,7 @@ function NumericTooltip({ active, payload, label, unit = '' }: { active?: boolea
   return (
     <div className="bg-white border border-neutral-100 rounded-lg shadow-lg px-3 py-2 text-xs">
       <p className="font-medium text-neutral-700 mb-0.5">{label}</p>
-      <p className="text-pink font-semibold">{payload[0].value.toFixed(1)}{unit}</p>
+      <p className="text-neutral-950 font-semibold">{payload[0].value.toFixed(1)}{unit}</p>
     </div>
   )
 }
@@ -74,7 +74,7 @@ function CountTooltip({ active, payload, label }: { active?: boolean; payload?: 
   return (
     <div className="bg-white border border-neutral-100 rounded-lg shadow-lg px-3 py-2 text-xs">
       <p className="font-medium text-neutral-700 mb-0.5">{label}</p>
-      <p className="text-pink font-semibold">{payload[0].value} experiment{payload[0].value !== 1 ? 's' : ''}</p>
+      <p className="text-neutral-950 font-semibold">{payload[0].value} experiment{payload[0].value !== 1 ? 's' : ''}</p>
     </div>
   )
 }
@@ -225,7 +225,7 @@ function AccuracyByModelChart({ allRuns }: AccuracyByModelChartProps) {
             />
             <YAxis tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} unit="%" domain={[0, 100]} />
             <Tooltip content={<PercentTooltip />} />
-            <Bar dataKey="accuracy" fill="#E879A0" radius={[4, 4, 0, 0]} maxBarSize={60} />
+            <Bar dataKey="accuracy" fill="#0A0A0A" radius={[4, 4, 0, 0]} maxBarSize={60} />
           </BarChart>
         </ResponsiveContainer>
       )}
@@ -280,7 +280,7 @@ function TrainingTimeChart({ allRuns }: TrainingTimeChartProps) {
             />
             <YAxis tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} unit="s" />
             <Tooltip content={<NumericTooltip unit="s" />} />
-            <Bar dataKey="time" fill="#E879A0" radius={[4, 4, 0, 0]} maxBarSize={60} />
+            <Bar dataKey="time" fill="#0A0A0A" radius={[4, 4, 0, 0]} maxBarSize={60} />
           </BarChart>
         </ResponsiveContainer>
       )}
@@ -339,7 +339,7 @@ function ExperimentActivityChart({ experiments }: ExperimentActivityChartProps) 
             <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} />
             <YAxis tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} allowDecimals={false} />
             <Tooltip content={<CountTooltip />} />
-            <Bar dataKey="count" fill="#E879A0" radius={[4, 4, 0, 0]} maxBarSize={60} />
+            <Bar dataKey="count" fill="#0A0A0A" radius={[4, 4, 0, 0]} maxBarSize={60} />
           </BarChart>
         </ResponsiveContainer>
       )}
@@ -402,7 +402,7 @@ function PerformanceByDatasetChart({ allRuns, experiments }: PerformanceByDatase
             />
             <YAxis tick={{ fontSize: 11, fill: '#888' }} tickLine={false} axisLine={false} unit="%" domain={[0, 100]} />
             <Tooltip content={<PercentTooltip />} />
-            <Bar dataKey="accuracy" fill="#E879A0" radius={[4, 4, 0, 0]} maxBarSize={60} />
+            <Bar dataKey="accuracy" fill="#0A0A0A" radius={[4, 4, 0, 0]} maxBarSize={60} />
           </BarChart>
         </ResponsiveContainer>
       )}

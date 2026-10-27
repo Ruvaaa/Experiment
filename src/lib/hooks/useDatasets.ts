@@ -17,7 +17,9 @@ export function useCreateDataset() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (data: Omit<Dataset, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-      const { data: result, error } = await supabase.from('datasets').insert(data).select().single()
+      const { data: authData, error: authError } = await supabase.auth.getUser()
+      if (authError || !authData.user) throw authError ?? new Error('You must be signed in to create a dataset')
+      const { data: result, error } = await supabase.from('datasets').insert({ ...data, user_id: authData.user.id }).select().single()
       if (error) throw error
       return result
     },

@@ -5,10 +5,15 @@ export default {
     extend: {
       colors: {
         pink: {
-          DEFAULT: '#E879A0',
-          hover: '#D5447A',
-          light: '#FDF2F6',
-          muted: '#F9E8EF',
+          DEFAULT: 'var(--color-primary)',
+          hover: 'var(--color-primary-hover)',
+          light: 'var(--color-primary-light)',
+          muted: '#E5E5E5',
+        },
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          hover: 'var(--color-primary-hover)',
+          light: 'var(--color-primary-light)',
         },
         neutral: {
           950: '#0F0F0F',

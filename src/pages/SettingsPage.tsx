@@ -174,7 +174,11 @@ function DeveloperSection() {
       setProjectId(project.id)
       setProjectName('')
       addToast('Project created', 'success')
-    } catch (error) { addToast(error instanceof Error ? error.message : 'Failed to create project', 'error') }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to create project'
+      const schemaCacheError = /schema cache|find the table.*projects|relation.*projects/i.test(message)
+      addToast(schemaCacheError ? 'Projects table is missing. Apply Supabase migrations 002 and 005, then reload the PostgREST schema cache.' : message, 'error')
+    }
   }
 
   async function handleCreateKey() {
@@ -203,7 +207,39 @@ function DeveloperSection() {
           <Input value={keyName} onChange={e => setKeyName(e.target.value)} placeholder="Key name" />
           <Button onClick={handleCreateKey} loading={createKey.isPending}><KeyRound size={16} />Create</Button>
         </div>
-        {plaintextKey && <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3"><code className="min-w-0 flex-1 break-all text-xs">{plaintextKey}</code><Button size="sm" variant="secondary" onClick={async () => { await navigator.clipboard.writeText(plaintextKey); addToast('Key copied', 'success') }}><Copy size={14} /></Button></div>}
+        {plaintextKey && (() => {
+          const supabaseUrl = String(import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '')
+          const ingestUrl = `${supabaseUrl}/functions/v1/experiment-ingest`
+          const envSnippet = `EXPERIMENT_TRACKER_API_KEY=${plaintextKey}\nEXPERIMENT_TRACKER_URL=${ingestUrl}`
+          const pythonSnippet = `from dotenv import load_dotenv\nfrom experiment_tracker import ExperimentTracker\n\nload_dotenv()  # Load the .env file in your VS Code project root\ntracker = ExperimentTracker()\nrun = tracker.init("my-project", "training-run")\nrun.log_metrics({"loss": 0.42, "accuracy": 0.91}, step=1, epoch=1)\nrun.flush()\nrun.finish(status="completed")`
+          return (
+            <div className="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <div className="flex items-center gap-2">
+                <code className="min-w-0 flex-1 break-all text-xs text-neutral-900">{plaintextKey}</code>
+                <Button size="sm" variant="secondary" onClick={async () => { await navigator.clipboard.writeText(plaintextKey); addToast('Key copied', 'success') }}><Copy size={14} />Copy</Button>
+              </div>
+              <div className="text-xs leading-5 text-neutral-700">
+                <p className="font-semibold text-neutral-900">Use this key in VS Code</p>
+                <ol className="mt-1 list-decimal space-y-1 pl-5">
+                  <li>Create a <code className="rounded bg-white px-1">.env</code> file in the root of the Python project you open in VS Code.</li>
+                  <li>Paste these two values into that file. Do not commit the file to Git.</li>
+                  <li>Run <code className="rounded bg-white px-1">%pip uninstall -y experiment-tracker experiment-tracker-sdk</code>, then install the SDK from this repository. An unrelated package named <code className="rounded bg-white px-1">experiment-tracker</code> can otherwise provide a different module.</li>
+                  <li>Run <code className="rounded bg-white px-1">%pip install --no-cache-dir --force-reinstall &quot;C:/path/to/MLExperimentModelDashboard/sdk&quot;</code> in the notebook, or use its terminal equivalent. Restart the kernel after installation.</li>
+                  <li>Install dotenv with <code className="rounded bg-white px-1">python -m pip install python-dotenv</code>, then load it before creating the tracker.</li>
+                </ol>
+              </div>
+              <div>
+                <div className="mb-1 flex items-center justify-between"><span className="text-xs font-medium">.env</span><Button size="sm" variant="ghost" onClick={async () => { await navigator.clipboard.writeText(envSnippet); addToast('.env values copied', 'success') }}><Copy size={14} />Copy values</Button></div>
+                <pre className="overflow-x-auto rounded-md bg-neutral-950 p-3 text-xs text-neutral-100"><code>{envSnippet}</code></pre>
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-medium">Python usage</p>
+                <pre className="overflow-x-auto rounded-md bg-neutral-950 p-3 text-xs text-neutral-100"><code>{pythonSnippet}</code></pre>
+              </div>
+              <p className="text-xs text-amber-800">This key is shown once. Store it securely and revoke it if it is exposed.</p>
+            </div>
+          )
+        })()}
         {(keysQuery.data ?? []).map(key => (
           <div key={key.id} className="flex items-center gap-3 border-t border-neutral-100 pt-3 first:border-0 first:pt-0">
             <div className="flex-1"><p className="text-sm font-medium text-neutral-800">{key.name}</p><p className="text-xs text-neutral-400">{key.key_prefix}… · {key.revoked_at ? 'Revoked' : key.last_used_at ? `Last used ${new Date(key.last_used_at).toLocaleDateString()}` : 'Never used'}</p></div>

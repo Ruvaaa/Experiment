@@ -8,6 +8,7 @@ import { useAuth } from '../../lib/hooks/useAuth'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { FloatingNeuralNetwork } from '../../components/FloatingNeuralNetwork'
+import { takeAuthDestination } from '../../lib/authRedirect'
 
 const schema = z.object({
   email: z.string().email('Invalid email address'),
@@ -16,12 +17,17 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>
 
 export default function LoginPage() {
-  const { signIn, signInWithGitHub } = useAuth()
+  const { signIn, signInWithGitHub, user, loading } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname || '/dashboard'
+  const requestedFrom = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname
+  const from = requestedFrom || '/dashboard'
   const oauthError = new URLSearchParams(window.location.search).get('error_description')
   const [authError, setAuthError] = React.useState<string | null>(oauthError)
+
+  React.useEffect(() => {
+    if (!loading && user) navigate(takeAuthDestination(from), { replace: true })
+  }, [from, loading, navigate, user])
 
   const {
     register,
@@ -34,7 +40,7 @@ export default function LoginPage() {
   async function handleGitHubSignIn() {
     setAuthError(null)
     try {
-      await signInWithGitHub()
+      await signInWithGitHub(from)
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : 'GitHub sign in failed')
     }

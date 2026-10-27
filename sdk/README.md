@@ -2,10 +2,11 @@
 
 ## Installation
 
-From the repository root:
+This repository includes an SDK package named `experiment_tracker`, which can conflict with an unrelated package that uses the same module name. Remove the unrelated package first, then install this SDK from the repository root:
 
-```sh
-python -m pip install ./sdk
+```powershell
+python -m pip uninstall -y experiment-tracker experiment-tracker-sdk
+python -m pip install --no-cache-dir ./sdk
 ```
 
 ## Authentication
@@ -18,6 +19,52 @@ EXPERIMENT_TRACKER_URL=https://<project-ref>.supabase.co/functions/v1/experiment
 ```
 
 The API key is bound to exactly one project. The project argument passed to `init()` is descriptive only and is never trusted by the server. Keys are shown only once; store them in a secret manager. Never use the Supabase service-role key in an SDK or frontend.
+
+### Using the key in VS Code
+
+Before installing, verify that VS Code is using the same Python interpreter as the kernel. If this import fails, uninstall the unrelated `experiment-tracker` package and reinstall this project's SDK:
+
+```python
+%pip uninstall -y experiment-tracker experiment-tracker-sdk
+%pip install --no-cache-dir --force-reinstall "C:/path/to/MLExperimentModelDashboard/sdk"
+```
+
+Restart the notebook kernel after installation, then verify:
+
+```python
+import experiment_tracker
+print(experiment_tracker.__file__)
+print(hasattr(experiment_tracker, "ExperimentTracker"))
+```
+
+Create a `.env` file in the root of the Python project opened in VS Code and add:
+
+```dotenv
+EXPERIMENT_TRACKER_API_KEY=exp_<the key shown once in Experiment Settings>
+EXPERIMENT_TRACKER_URL=https://<project-ref>.supabase.co/functions/v1/experiment-ingest
+```
+
+Do not commit `.env`. Load it before creating the tracker:
+
+```sh
+python -m pip install python-dotenv
+```
+
+```python
+from dotenv import load_dotenv
+from experiment_tracker import ExperimentTracker
+
+load_dotenv()
+tracker = ExperimentTracker()
+```
+
+Alternatively, set both variables for the current PowerShell session without creating a file:
+
+```powershell
+$env:EXPERIMENT_TRACKER_API_KEY="exp_<key>"
+$env:EXPERIMENT_TRACKER_URL="https://<project-ref>.supabase.co/functions/v1/experiment-ingest"
+python your_training_script.py
+```
 
 ## Usage
 

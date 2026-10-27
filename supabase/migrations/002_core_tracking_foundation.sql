@@ -11,6 +11,7 @@ create table if not exists projects (
   updated_at timestamptz default now()
 );
 alter table projects enable row level security;
+drop policy if exists "Users own projects" on projects;
 create policy "Users own projects" on projects for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 alter table experiments add column if not exists project_id uuid references projects(id) on delete set null;
@@ -54,6 +55,7 @@ create table if not exists run_metric_history (
   unique(run_id, client_event_id)
 );
 alter table run_metric_history enable row level security;
+drop policy if exists "Users own run metrics" on run_metric_history;
 create policy "Users own run metrics" on run_metric_history for all
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
@@ -70,6 +72,7 @@ create table if not exists experiment_artifacts (
   unique(experiment_id, uri)
 );
 alter table experiment_artifacts enable row level security;
+drop policy if exists "Users own artifacts" on experiment_artifacts;
 create policy "Users own artifacts" on experiment_artifacts for all
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
@@ -87,12 +90,14 @@ create table if not exists sdk_api_keys (
   unique(project_id, name)
 );
 alter table sdk_api_keys enable row level security;
+drop policy if exists "Users view own SDK keys" on sdk_api_keys;
+drop policy if exists "Users manage own SDK keys" on sdk_api_keys;
 create policy "Users view own SDK keys" on sdk_api_keys for select using (auth.uid() = user_id);
 create policy "Users manage own SDK keys" on sdk_api_keys for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 create or replace function create_sdk_api_key(p_project_id uuid, p_name text)
 returns table(id uuid, plaintext_key text, key_prefix text)
-language plpgsql security definer set search_path = public, pg_temp
+language plpgsql security definer set search_path = public, extensions, pg_temp
 as $$
 declare
   v_user uuid := auth.uid();
@@ -100,11 +105,15 @@ declare
   v_hash text;
   v_id uuid := gen_random_uuid();
 begin
-  if v_user is null then raise exception 'Authentication required'; end;
+  if v_user is null then
+    raise exception 'Authentication required';
+  end if;
   if not exists (select 1 from projects where projects.id = p_project_id and projects.user_id = v_user) then
     raise exception 'Project not found';
-  end;
-  if p_name is null or char_length(trim(p_name)) = 0 then raise exception 'Key name required'; end;
+  end if;
+  if p_name is null or char_length(trim(p_name)) = 0 then
+    raise exception 'Key name required';
+  end if;
 
   v_secret := 'exp_' || encode(gen_random_bytes(32), 'hex');
   v_hash := encode(digest(v_secret, 'sha256'), 'hex');
@@ -135,13 +144,19 @@ as $$
 begin
   if new.project_id is not null and not exists (
     select 1 from projects where id = new.project_id and user_id = new.user_id
-  ) then raise exception 'project owner does not match experiment owner'; end;
+  ) then
+    raise exception 'project owner does not match experiment owner';
+  end if;
   if new.model_id is not null and not exists (
     select 1 from models where id = new.model_id and user_id = new.user_id
-  ) then raise exception 'model owner does not match experiment owner'; end;
+  ) then
+    raise exception 'model owner does not match experiment owner';
+  end if;
   if new.dataset_id is not null and not exists (
     select 1 from datasets where id = new.dataset_id and user_id = new.user_id
-  ) then raise exception 'dataset owner does not match experiment owner'; end;
+  ) then
+    raise exception 'dataset owner does not match experiment owner';
+  end if;
   return new;
 end;
 $$;
@@ -155,7 +170,9 @@ as $$
 begin
   if not exists (
     select 1 from experiments e where e.id = new.experiment_id and e.user_id = new.user_id
-  ) then raise exception 'run owner does not match experiment owner'; end;
+  ) then
+    raise exception 'run owner does not match experiment owner';
+  end if;
   return new;
 end;
 $$;
@@ -169,7 +186,9 @@ as $$
 begin
   if not exists (
     select 1 from experiment_runs r where r.id = new.run_id and r.user_id = new.user_id
-  ) then raise exception 'metric owner does not match run owner'; end;
+  ) then
+    raise exception 'metric owner does not match run owner';
+  end if;
   return new;
 end;
 $$;

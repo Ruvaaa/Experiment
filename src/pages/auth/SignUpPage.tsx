@@ -2,12 +2,13 @@ import React from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FlaskConical, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { FloatingNeuralNetwork } from '../../components/FloatingNeuralNetwork'
+import { takeAuthDestination } from '../../lib/authRedirect'
 
 const schema = z
   .object({
@@ -24,10 +25,15 @@ const schema = z
 type FormValues = z.infer<typeof schema>
 
 export default function SignUpPage() {
-  const { signUp, signInWithGitHub } = useAuth()
+  const { signUp, signInWithGitHub, user, loading } = useAuth()
+  const navigate = useNavigate()
   const oauthError = new URLSearchParams(window.location.search).get('error_description')
   const [authError, setAuthError] = React.useState<string | null>(oauthError)
   const [success, setSuccess] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!loading && user) navigate(takeAuthDestination('/dashboard'), { replace: true })
+  }, [loading, navigate, user])
 
   const {
     register,
@@ -40,7 +46,7 @@ export default function SignUpPage() {
   async function handleGitHubSignIn() {
     setAuthError(null)
     try {
-      await signInWithGitHub()
+      await signInWithGitHub('/dashboard')
     } catch (err) {
       setAuthError(err instanceof Error ? err.message : 'GitHub sign in failed')
     }

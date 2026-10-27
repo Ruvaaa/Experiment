@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from 'react'
 import type { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import type { Profile } from '../types'
+import { saveAuthDestination } from '../lib/authRedirect'
 
 interface AuthContextValue {
   user: User | null
@@ -9,7 +10,7 @@ interface AuthContextValue {
   profile: Profile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
-  signInWithGitHub: () => Promise<void>
+  signInWithGitHub: (destination?: string) => Promise<void>
   signUp: (email: string, password: string, fullName: string) => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
@@ -30,20 +31,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    let active = true
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active) return
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
+      if (session?.user) void fetchProfile(session.user.id)
       setLoading(false)
+    }).catch(() => {
+      if (active) setLoading(false)
     })
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
+      if (session?.user) void fetchProfile(session.user.id)
       else setProfile(null)
       setLoading(false)
     })
-    return () => subscription.unsubscribe()
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   async function signIn(email: string, password: string) {
@@ -51,10 +59,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
-  async function signInWithGitHub() {
+  async function signInWithGitHub(destination = '/dashboard') {
+    saveAuthDestination(destination)
+    const callbackUrl = new URL('/login', window.location.origin)
+    callbackUrl.searchParams.set('oauth_return', '1')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
-      options: { redirectTo: `${window.location.origin}/dashboard`, scopes: 'read:user user:email' },
+      options: { redirectTo: callbackUrl.toString(), scopes: 'read:user user:email' },
     })
     if (error) throw error
   }

@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
@@ -18,6 +18,8 @@ import NotesPage from './pages/NotesPage'
 import SettingsPage from './pages/SettingsPage'
 import LandingPage from './pages/LandingPage'
 import { FloatingNeuralNetwork } from './components/FloatingNeuralNetwork'
+import { useAuth } from './lib/hooks/useAuth'
+import { takeAuthDestination } from './lib/authRedirect'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 1000 * 60 } },
@@ -35,6 +37,16 @@ function AppLayout() {
   )
 }
 
+function LandingRoute() {
+  const { user, loading } = useAuth()
+  const location = useLocation()
+  const oauthError = new URLSearchParams(location.search).get('error_description') || new URLSearchParams(location.search).get('error')
+  if (loading) return null
+  if (oauthError) return <Navigate to={`/login?${new URLSearchParams(location.search).toString()}`} replace />
+  if (user) return <Navigate to={takeAuthDestination('/dashboard')} replace />
+  return <LandingPage />
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -42,7 +54,7 @@ export default function App() {
         <ToastProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<LandingRoute />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />

@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "experiment-tracker"
+name = "experiment-tracker-sdk"
 version = "0.1.0"
 description = "Python client for the Experiment ML tracking platform"
 requires-python = ">=3.9"

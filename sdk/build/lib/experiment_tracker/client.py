@@ -37,6 +37,18 @@ class Run:
             raise TypeError("config must be a mapping")
         self.client._request("PATCH", f"/runs/{self.id}", {"model_config": dict(config)})
 
+    def log_metric(self, metrics_or_name: Mapping[str, int | float] | str, value: int | float | None = None, step: int | None = None, epoch: int | None = None, batch_size: int = 100, recorded_at: str | None = None) -> None:
+        """Log one named metric or a mapping of metrics."""
+        if isinstance(metrics_or_name, Mapping):
+            if value is not None:
+                raise TypeError("value is only valid when logging a metric name")
+            metrics = metrics_or_name
+        elif isinstance(metrics_or_name, str) and value is not None:
+            metrics = {metrics_or_name: value}
+        else:
+            raise TypeError("log_metric expects a metric name and value, or a mapping")
+        self.log_metrics(metrics, step=step, epoch=epoch, batch_size=batch_size, recorded_at=recorded_at)
+
     def log_metrics(self, metrics: Mapping[str, int | float], step: int | None = None, epoch: int | None = None, batch_size: int = 100, recorded_at: str | None = None) -> None:
         if not isinstance(metrics, Mapping):
             raise TypeError("metrics must be a mapping")

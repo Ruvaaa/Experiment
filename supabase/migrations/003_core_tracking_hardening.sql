@@ -31,13 +31,13 @@ as $$
 begin
   if old.status in ('completed', 'failed', 'cancelled') and new.status not in ('completed', 'failed', 'cancelled') then
     raise exception 'terminal run status cannot be changed to %', new.status;
-  end;
+  end if;
   if new.status in ('completed', 'failed', 'cancelled') and new.completed_at is null then
     new.completed_at := coalesce(old.completed_at, now());
-  end;
+  end if;
   if new.status not in ('completed', 'failed', 'cancelled') and new.completed_at is not null then
     new.completed_at := null;
-  end;
+  end if;
   return new;
 end;
 $$;
@@ -53,7 +53,7 @@ begin
     perform pg_advisory_xact_lock(hashtextextended(new.experiment_id::text, 0));
     select coalesce(max(run_number), 0) + 1 into new.run_number
     from experiment_runs where experiment_id = new.experiment_id;
-  end;
+  end if;
   return new;
 end;
 $$;

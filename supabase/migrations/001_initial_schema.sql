@@ -2,7 +2,7 @@
 create extension if not exists "uuid-ossp";
 
 -- Profiles
-create table profiles (
+create table if not exists profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text,
   full_name text,
@@ -11,12 +11,15 @@ create table profiles (
   updated_at timestamptz default now()
 );
 alter table profiles enable row level security;
+drop policy if exists "Users can view own profile" on profiles;
+drop policy if exists "Users can update own profile" on profiles;
+drop policy if exists "Users can insert own profile" on profiles;
 create policy "Users can view own profile" on profiles for select using (auth.uid() = id);
 create policy "Users can update own profile" on profiles for update using (auth.uid() = id);
 create policy "Users can insert own profile" on profiles for insert with check (auth.uid() = id);
 
 -- Datasets
-create table datasets (
+create table if not exists datasets (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
   name text not null,
@@ -31,10 +34,11 @@ create table datasets (
   updated_at timestamptz default now()
 );
 alter table datasets enable row level security;
+drop policy if exists "Users own datasets" on datasets;
 create policy "Users own datasets" on datasets for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Models
-create table models (
+create table if not exists models (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
   name text not null,
@@ -47,10 +51,11 @@ create table models (
   updated_at timestamptz default now()
 );
 alter table models enable row level security;
+drop policy if exists "Users own models" on models;
 create policy "Users own models" on models for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Experiments
-create table experiments (
+create table if not exists experiments (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
   name text not null,
@@ -65,10 +70,11 @@ create table experiments (
   updated_at timestamptz default now()
 );
 alter table experiments enable row level security;
+drop policy if exists "Users own experiments" on experiments;
 create policy "Users own experiments" on experiments for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Experiment Runs
-create table experiment_runs (
+create table if not exists experiment_runs (
   id uuid primary key default gen_random_uuid(),
   experiment_id uuid references experiments(id) on delete cascade not null,
   user_id uuid references auth.users(id) on delete cascade not null,
@@ -86,10 +92,11 @@ create table experiment_runs (
   created_at timestamptz default now()
 );
 alter table experiment_runs enable row level security;
+drop policy if exists "Users own runs" on experiment_runs;
 create policy "Users own runs" on experiment_runs for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Notes
-create table notes (
+create table if not exists notes (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
   title text not null,
@@ -99,16 +106,18 @@ create table notes (
   updated_at timestamptz default now()
 );
 alter table notes enable row level security;
+drop policy if exists "Users own notes" on notes;
 create policy "Users own notes" on notes for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Milestones
-create table user_milestones (
+create table if not exists user_milestones (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
   milestone_type text not null,
   achieved_at timestamptz default now()
 );
 alter table user_milestones enable row level security;
+drop policy if exists "Users own milestones" on user_milestones;
 create policy "Users own milestones" on user_milestones for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Auto-create profile on signup
@@ -121,6 +130,7 @@ begin
   return new;
 end;
 $$;
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();

@@ -1,7 +1,8 @@
 import unittest
+import uuid
 from unittest.mock import patch
 
-from experiment_tracker.client import ExperimentTracker, ExperimentTrackerError
+from experiment_tracker.client import ExperimentTracker, ExperimentTrackerError, Run
 
 
 class FakeResponse:
@@ -24,6 +25,15 @@ class ClientTests(unittest.TestCase):
         with patch.dict("os.environ", {"EXPERIMENT_TRACKER_API_KEY": ""}, clear=False):
             with self.assertRaises(ExperimentTrackerError):
                 ExperimentTracker(api_key=None)
+
+    def test_run_accepts_singular_log_metric(self):
+        with patch("experiment_tracker.client.request.urlopen") as urlopen:
+            response = FakeResponse({"run": {"id": str(uuid.uuid4())}})
+            urlopen.return_value = response
+            run = Run(object(), "00000000-0000-0000-0000-000000000001")
+            run.client = ExperimentTracker(api_key="exp_" + "a" * 64, base_url="https://example.test")
+            run.log_metric({"loss": 0.42, "accuracy": 0.91}, step=1, epoch=1)
+            self.assertEqual(len(run._metric_batch), 1)
 
     def test_run_batches_and_finishes(self):
         tracker = ExperimentTracker(api_key="exp_" + "a" * 64, base_url="https://example.test")

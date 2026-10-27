@@ -1,0 +1,9 @@
+project_id = "gxshmswstvrepudivlrf"
+
+[api]
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[functions.experiment-ingest]
+verify_jwt = false

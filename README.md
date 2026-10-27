@@ -184,3 +184,9 @@ Output lands in `dist/`. The bundle is ~1.1 MB unminified — if you want to red
 
 **Profile not created after signup**
 → The `handle_new_user` trigger requires the migration to have been run. Re-run the SQL migration, then create a new account.
+
+---
+
+## Python SDK
+
+The complete beginner's guide to installation, every public argument, metrics, framework integrations, errors, retries, security, and troubleshooting is in [USAGE.md](USAGE.md).

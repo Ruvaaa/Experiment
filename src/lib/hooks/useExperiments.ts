@@ -8,7 +8,7 @@ export function useExperiments(filters?: Partial<ExperimentFilters>) {
     queryFn: async () => {
       let query = supabase
         .from('experiments')
-        .select('*, model:models(id,name,framework), dataset:datasets(id,name), runs:experiment_runs(id,accuracy,run_number,created_at)')
+        .select('*, model:models(id,name,framework), dataset:datasets(id,name), runs:experiment_runs(id,accuracy,precision_score,recall,f1_score,loss,training_time_seconds,epochs,learning_rate,batch_size,run_number,created_at)')
         .order('created_at', { ascending: false })
 
       if (filters?.search) {

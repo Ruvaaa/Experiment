@@ -69,6 +69,7 @@ export default function App() {
                 <Route path="/notes" element={<NotesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
               </Route>
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </BrowserRouter>
         </ToastProvider>

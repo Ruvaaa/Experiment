@@ -40,15 +40,15 @@ function computeBestRun(runs: ExperimentRun[]): BestRunData {
     ? withAcc.reduce((a, b) => (b.accuracy! > a.accuracy! ? b : a))
     : runs[runs.length - 1]
   return {
-    accuracy: best.accuracy,
-    precision_score: best.precision_score,
-    recall: best.recall,
-    f1_score: best.f1_score,
-    loss: best.loss,
-    training_time_seconds: best.training_time_seconds,
-    epochs: best.epochs,
-    learning_rate: best.learning_rate,
-    batch_size: best.batch_size,
+    accuracy: best.accuracy ?? null,
+    precision_score: best.precision_score ?? null,
+    recall: best.recall ?? null,
+    f1_score: best.f1_score ?? null,
+    loss: best.loss ?? null,
+    training_time_seconds: best.training_time_seconds ?? null,
+    epochs: best.epochs ?? null,
+    learning_rate: best.learning_rate ?? null,
+    batch_size: best.batch_size ?? null,
   }
 }
 

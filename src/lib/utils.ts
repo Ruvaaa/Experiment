@@ -23,8 +23,8 @@ export function normalizeAccuracy(value: number | string): number | null {
   return numeric > 1 ? numeric / 100 : numeric
 }
 
-export function formatAccuracy(value: number | null): string {
-  if (value === null) return '—'
+export function formatAccuracy(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return '—'
   return `${(value * 100).toFixed(2)}%`
 }
 

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Analytics } from '@vercel/analytics/react'
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
@@ -71,6 +72,7 @@ export default function App() {
               </Route>
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
+            <Analytics />
           </BrowserRouter>
         </ToastProvider>
       </AuthProvider>
